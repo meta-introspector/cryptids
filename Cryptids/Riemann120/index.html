@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riemann120 · A friendly guide to the machine</title>
+  <link rel="stylesheet" href="/theme.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              50: 'var(--color-slate-50)',
+              100: 'var(--color-slate-100)',
+              200: 'var(--color-slate-200)',
+              300: 'var(--color-slate-300)',
+              400: 'var(--color-slate-400)',
+              500: 'var(--color-slate-500)',
+              600: 'var(--color-slate-600)',
+              700: 'var(--color-slate-700)',
+              900: 'var(--color-slate-900)'
+            },
+            indigo: {
+              50: 'var(--color-indigo-50)',
+              100: 'var(--color-indigo-100)',
+              600: 'var(--color-primary)',
+              700: 'var(--color-indigo-700)'
+            },
+            emerald: {
+              50: 'var(--color-emerald-50)',
+              100: 'var(--color-emerald-100)',
+              700: 'var(--color-emerald-700)'
+            },
+            rose: {
+              50: 'var(--color-rose-50)',
+              100: 'var(--color-rose-100)',
+              700: 'var(--color-rose-700)'
+            },
+            white: 'var(--color-surface)'
+          },
+          borderRadius: {
+            DEFAULT: 'var(--radius)',
+            sm: 'var(--radius)',
+            md: 'var(--radius)',
+            lg: 'var(--radius)',
+            xl: 'var(--radius)',
+            '2xl': 'var(--radius)',
+            full: 'var(--radius-pill)'
+          },
+          fontFamily: {
+            sans: ['var(--font-body)'],
+            heading: ['var(--font-heading)']
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: var(--font-body);
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--font-heading);
+    }
+
+    .panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-slate-200);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 36px rgb(15 23 42 / 5%);
+    }
+
+    .primary-button {
+      background: var(--color-primary);
+      color: var(--color-primary-contrast);
+      border-radius: var(--radius);
+    }
+
+    .tab-active {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    .diagram-text {
+      font-family: var(--font-body);
+      fill: var(--color-text);
+    }
+
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <header class="border-b border-slate-200 bg-white/90">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
+      <a href="/" class="flex items-center gap-3" aria-label="Riemann120 home">
+        <span class="grid h-10 w-10 place-items-center rounded-[var(--radius)] bg-[var(--color-primary)] text-sm font-bold text-[var(--color-primary-contrast)]">R¹²⁰</span>
+        <span class="font-semibold tracking-tight">Riemann120 <span class="font-normal text-slate-400">/ visual guide</span></span>
+      </a>
+      <a href="#playground" class="rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">Try the playground ↓</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="overflow-hidden border-b border-slate-200 bg-white">
+      <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-8 lg:py-16">
+        <div>
+          <p class="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[.14em] text-indigo-700">
+            <span class="h-2 w-2 rounded-full bg-[var(--color-primary)]"></span>
+            A plain-language guide
+          </p>
+          <h1 class="max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">A big math idea,<br><span class="text-[var(--color-primary)]">one tiny step at a time.</span></h1>
+          <p class="mt-5 max-w-xl text-base leading-7 text-slate-600">This project pairs number calculations with a tiny computer called a Turing machine. The machine reads a tape, changes one square, and moves left or right. This page lets you see what those words mean.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="#playground" class="primary-button inline-flex items-center px-5 py-3 text-sm font-semibold shadow-sm transition hover:opacity-90">Start with the number explorer</a>
+            <a href="#how-it-works" class="inline-flex items-center rounded-[var(--radius)] border border-slate-300 bg-white px-5 py-3 text-sm font-semibold">See the picture first</a>
+          </div>
+          <p class="mt-5 max-w-xl text-xs leading-5 text-slate-500">This is an interactive companion to the Lean source, not a proof checker. The 121-state transition table is not loaded into the demo machine.</p>
+        </div>
+
+        <div id="how-it-works" class="panel overflow-hidden p-4 sm:p-6">
+          <div class="mb-3 flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">The machine in one glance</p>
+              <h2 class="mt-1 text-xl font-semibold sm:text-2xl">Read → write → move</h2>
+            </div>
+            <span class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">One step</span>
+          </div>
+          <svg class="h-auto w-full" viewBox="0 0 720 310" role="img" aria-labelledby="overview-title overview-desc">
+            <title id="overview-title">A visual explanation of one Turing machine step</title>
+            <desc id="overview-desc">The machine reads a one from the highlighted tape square, writes zero there, moves right, and changes to the next state.</desc>
+            <rect x="10" y="10" width="700" height="285" rx="var(--radius)" fill="var(--color-bg)" />
+            <rect x="254" y="28" width="212" height="54" rx="var(--radius)" fill="var(--color-surface)" stroke="var(--color-primary)" stroke-width="2" />
+            <text x="360" y="51" text-anchor="middle" class="diagram-text" font-size="12" font-weight="600">CURRENT INSTRUCTION</text>
+            <text x="360" y="69" text-anchor="middle" class="diagram-text" font-size="15" font-weight="700">See 1 → write 0 → move right</text>
+            <path d="M360 83 V110" stroke="var(--color-primary)" stroke-width="3" />
+            <path d="M352 103 L360 112 L368 103" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <text x="360" y="137" text-anchor="middle" class="diagram-text" font-size="12" font-weight="700">TAPE · EACH BOX IS ONE SQUARE</text>
+            <g>
+              <rect x="84" y="157" width="102" height="68" rx="12" fill="var(--color-surface)" stroke="var(--color-slate-300)" stroke-width="2" />
+              <rect x="197" y="157" width="102" height="68" rx="12" fill="var(--color-surface)" stroke="var(--color-slate-300)" stroke-width="2" />
+              <rect x="310" y="151" width="102" height="80" rx="14" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="3" />
+              <rect x="423" y="157" width="102" height="68" rx="12" fill="var(--color-surface)" stroke="var(--color-slate-300)" stroke-width="2" />
+              <rect x="536" y="157" width="102" height="68" rx="12" fill="var(--color-surface)" stroke="var(--color-slate-300)" stroke-width="2" />
+              <text x="135" y="201" text-anchor="middle" class="diagram-text" font-size="25" font-weight="700">1</text>
+              <text x="248" y="201" text-anchor="middle" class="diagram-text" font-size="25" font-weight="700">0</text>
+              <text x="361" y="201" text-anchor="middle" fill="var(--color-primary-contrast)" font-size="25" font-weight="700">1 → 0</text>
+              <text x="474" y="201" text-anchor="middle" class="diagram-text" font-size="25" font-weight="700">1</text>
+              <text x="587" y="201" text-anchor="middle" class="diagram-text" font-size="25" font-weight="700">_</text>
+              <text x="135" y="244" text-anchor="middle" fill="var(--color-muted)" font-size="11">cell −2</text>
+              <text x="248" y="244" text-anchor="middle" fill="var(--color-muted)" font-size="11">cell −1</text>
+              <text x="361" y="244" text-anchor="middle" fill="var(--color-primary)" font-size="11" font-weight="700">HEAD · NOW</text>
+              <text x="474" y="244" text-anchor="middle" fill="var(--color-muted)" font-size="11">cell +1</text>
+              <text x="587" y="244" text-anchor="middle" fill="var(--color-muted)" font-size="11">empty</text>
+            </g>
+            <path d="M361 250 C361 272 474 272 474 251" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-dasharray="5 5" />
+            <path d="M466 257 L474 250 L482 258" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <text x="418" y="286" text-anchor="middle" class="diagram-text" font-size="12" font-weight="700">NEXT: head moves one square right</text>
+          </svg>
+          <div class="mt-2 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+              <p class="text-xs font-bold text-slate-900">1. Read</p>
+              <p class="mt-1 text-xs leading-5 text-slate-600">Look at the highlighted square.</p>
+            </div>
+            <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+              <p class="text-xs font-bold text-slate-900">2. Follow a rule</p>
+              <p class="mt-1 text-xs leading-5 text-slate-600">The rule says what to write and where to go.</p>
+            </div>
+            <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+              <p class="text-xs font-bold text-slate-900">3. Repeat</p>
+              <p class="mt-1 text-xs leading-5 text-slate-600">The machine keeps going until it has no rule.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-5 py-10 lg:px-8">
+      <div class="mb-6 max-w-3xl">
+        <p class="text-xs font-bold uppercase tracking-[.15em] text-indigo-600">Two things to explore</p>
+        <h2 class="mt-2 text-2xl font-semibold sm:text-3xl">You don’t need to know Lean to try this.</h2>
+        <p class="mt-3 leading-7 text-slate-600">The original file defines both arithmetic and machine behavior. Use the number explorer to calculate the arithmetic, or open the simulator to watch a simple machine work.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <article class="panel p-5 sm:p-6">
+          <span class="grid h-10 w-10 place-items-center rounded-[var(--radius)] bg-indigo-50 text-lg font-bold text-indigo-700">#</span>
+          <h3 class="mt-4 text-lg font-semibold">Number explorer</h3>
+          <p class="mt-2 text-sm leading-6 text-slate-600">Enter a number <span class="mono">n</span>. The page calculates a product built from factorial and primes, then shows its digit count and a few related values.</p>
+          <p class="mono mt-3 rounded-[var(--radius)] bg-slate-50 p-3 text-sm">Aₙ = n! × P(n)</p>
+          <p class="mt-2 text-xs leading-5 text-slate-500"><span class="font-semibold">P(n)</span> means multiply all prime numbers up to n. <span class="font-semibold">n!</span> means 1 × 2 × … × n.</p>
+        </article>
+        <article class="panel p-5 sm:p-6">
+          <span class="grid h-10 w-10 place-items-center rounded-[var(--radius)] bg-emerald-50 text-lg font-bold text-emerald-700">▤</span>
+          <h3 class="mt-4 text-lg font-semibold">Tape machine</h3>
+          <p class="mt-2 text-sm leading-6 text-slate-600">A tiny program that reads one cell at a time. It can write <span class="mono">0</span>, <span class="mono">1</span>, or a blank, then move one square left or right.</p>
+          <p class="mt-3 text-xs leading-5 text-slate-500">The included example is a small demo machine. The module’s full 121-state table is not included here.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="playground" class="border-y border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-5 py-10 lg:px-8">
+        <div class="mb-6">
+          <p class="text-xs font-bold uppercase tracking-[.15em] text-indigo-600">Try it yourself</p>
+          <h2 class="mt-2 text-3xl font-semibold">Interactive playground</h2>
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Pick a section below. Start with numbers if you want instant results; choose the machine simulator to watch the tape change.</p>
+        </div>
+
+        <div class="mb-6 flex flex-wrap gap-2 border-b border-slate-200" role="tablist" aria-label="Playground sections">
+          <button class="tab-button tab-active border-b-2 px-4 py-3 text-sm font-semibold" data-tab="math" role="tab" aria-selected="true">Number explorer</button>
+          <button class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-slate-500" data-tab="machine" role="tab" aria-selected="false">Tape machine</button>
+          <button class="tab-button border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-slate-500" data-tab="reference" role="tab" aria-selected="false">What was translated?</button>
+        </div>
+
+        <section id="panel-math" class="tab-panel grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+          <div class="panel p-5 sm:p-7">
+            <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">First, choose a number</p>
+            <h3 class="mt-2 text-xl font-semibold">Calculate the sequence</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">This calculator follows the module’s definitions using exact whole-number arithmetic. Try <span class="mono">10</span> to begin.</p>
+            <label for="n-input" class="mb-2 mt-5 block text-sm font-semibold">Choose n (1 to 200)</label>
+            <div class="flex gap-3">
+              <input id="n-input" type="number" min="1" max="200" value="10" class="min-w-0 flex-1 rounded-[var(--radius)] border border-slate-300 bg-white px-4 py-3 text-base">
+              <button id="calculate-button" class="primary-button px-5 py-3 text-sm font-semibold transition hover:opacity-90">Calculate</button>
+            </div>
+            <p class="mt-3 text-xs leading-5 text-slate-500">The limit keeps calculations fast in your browser.</p>
+            <div id="math-error" class="mt-4 hidden rounded-[var(--radius)] bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"></div>
+            <div class="mt-5 rounded-[var(--radius)] bg-indigo-50 p-4">
+              <p class="text-sm font-semibold text-indigo-700">What does the product mean?</p>
+              <p class="mt-1 text-sm leading-6 text-slate-600"><span class="mono">n!</span> multiplies every whole number up to n. <span class="mono">P(n)</span> multiplies every prime up to n. The calculator multiplies those two results.</p>
+            </div>
+          </div>
+
+          <div class="panel p-5 sm:p-7">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">Your answer</p>
+                <h3 class="mt-2 text-xl font-semibold">Here’s what was calculated</h3>
+              </div>
+              <span id="counterexample-badge" class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">Predicate: false</span>
+            </div>
+            <div class="mt-5 grid gap-3 sm:grid-cols-2">
+              <article class="rounded-[var(--radius)] bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Prime product P(n)</p>
+                <p id="primorial-result" class="mono mt-2 break-all text-sm font-semibold">—</p>
+                <p class="mt-1 text-xs text-slate-500">Multiply all primes up to n.</p>
+              </article>
+              <article class="rounded-[var(--radius)] bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Aₙ = n! × P(n)</p>
+                <p id="product-result" class="mono mt-2 break-all text-sm font-semibold">—</p>
+                <p class="mt-1 text-xs text-slate-500">The sequence value.</p>
+              </article>
+              <article class="rounded-[var(--radius)] bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Offset digit count</p>
+                <p id="digits-result" class="mono mt-2 text-2xl font-semibold">—</p>
+                <p class="mt-1 text-xs text-slate-500">A digit-count measure defined in the source.</p>
+              </article>
+              <article class="rounded-[var(--radius)] bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Deficit Δₙ</p>
+                <p id="deficit-result" class="mono mt-2 text-2xl font-semibold">—</p>
+                <p class="mt-1 text-xs text-slate-500">The remaining amount in the definition.</p>
+              </article>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border border-indigo-100 bg-indigo-50/60 p-4">
+              <div>
+                <p class="text-sm font-semibold text-indigo-700">Quartering clock qₙ</p>
+                <p class="mt-1 text-xs leading-5 text-slate-600">A count made by repeatedly dividing n − 1 by 4.</p>
+              </div>
+              <p id="clock-result" class="mono text-2xl font-semibold text-indigo-700">—</p>
+            </div>
+            <p id="predicate-equation" class="mono mt-4 break-all text-xs leading-5 text-slate-500"></p>
+          </div>
+        </section>
+
+        <section id="panel-machine" class="tab-panel hidden">
+          <div class="mb-5 rounded-[var(--radius)] border border-indigo-100 bg-indigo-50/70 p-4 sm:p-5">
+            <h3 class="font-semibold text-indigo-700">How to try the machine</h3>
+            <p class="mt-1 text-sm leading-6 text-slate-600">The purple box is where the machine is looking. Press <strong>Take one step</strong> and watch the machine follow its instruction. Use <strong>Run for me</strong> to let it take several steps automatically.</p>
+          </div>
+          <div class="grid gap-5 lg:grid-cols-[.85fr_1.15fr]">
+            <div class="panel p-5 sm:p-7">
+              <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">Set up the tape</p>
+              <h3 class="mt-2 text-xl font-semibold">Choose where it begins</h3>
+              <p class="mt-2 text-sm leading-6 text-slate-600">Start with the sample tape <span class="mono">1011</span>. Blank squares appear as <span class="mono">_</span>.</p>
+              <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="tape-input" class="mb-2 block text-sm font-semibold">Starting tape (0s and 1s)</label>
+                  <input id="tape-input" value="1011" class="mono w-full rounded-[var(--radius)] border border-slate-300 px-4 py-3">
+                </div>
+                <div>
+                  <label for="state-input" class="mb-2 block text-sm font-semibold">Starting state</label>
+                  <input id="state-input" value="start" class="mono w-full rounded-[var(--radius)] border border-slate-300 px-4 py-3">
+                </div>
+              </div>
+              <div class="mt-5 flex flex-wrap gap-3">
+                <button id="reset-machine" class="primary-button px-4 py-3 text-sm font-semibold hover:opacity-90">↺ Start over</button>
+                <button id="step-machine" class="rounded-[var(--radius)] border border-slate-300 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50">▶ Take one step</button>
+                <button id="run-machine" class="rounded-[var(--radius)] border border-slate-300 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50">⚡ Run for me</button>
+              </div>
+              <p id="machine-error" class="mt-4 hidden rounded-[var(--radius)] bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"></p>
+              <details class="mt-5 rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-4">
+                <summary class="cursor-pointer text-sm font-semibold">Advanced: view or edit the demo rules</summary>
+                <p class="mt-2 text-xs leading-5 text-slate-500">Each line means: current state, symbol read, symbol written, direction, next state. These are sample rules, not the full machine table from the source.</p>
+                <label for="rules-input" class="mb-2 mt-4 block text-sm font-semibold">Rules</label>
+                <textarea id="rules-input" rows="8" spellcheck="false" class="mono w-full rounded-[var(--radius)] border border-slate-300 bg-white px-4 py-3 text-sm leading-6">start,0,1,R,scan
+start,1,1,R,scan
+scan,0,0,R,scan
+scan,1,1,R,scan
+scan,_,1,L,halt</textarea>
+              </details>
+            </div>
+
+            <div class="panel p-5 sm:p-7">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">Watch it work</p>
+                  <h3 class="mt-2 text-xl font-semibold">The tape changes as it runs</h3>
+                </div>
+                <span id="machine-status" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">Ready</span>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-600" aria-label="Tape color key">
+                <span class="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2"><span class="h-3 w-3 rounded-sm bg-[var(--color-primary)]"></span>Machine is looking here</span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2"><span class="h-3 w-3 rounded-sm border border-slate-300 bg-white"></span>Other squares</span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2">_ = blank</span>
+              </div>
+              <div class="mt-4">
+                <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Tape · the marked square is being read</p>
+                <svg id="machine-visualizer" class="w-full overflow-hidden rounded-[var(--radius)] border border-slate-200 bg-slate-50" viewBox="0 0 900 230" role="img" aria-labelledby="machine-svg-title machine-svg-description">
+                  <title id="machine-svg-title">Turing machine tape visualizer</title>
+                  <desc id="machine-svg-description">A live diagram of the current machine state and tape cells around the tape head.</desc>
+                </svg>
+              </div>
+              <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">State</p>
+                  <p id="current-state" class="mono mt-2 break-all text-base font-semibold">—</p>
+                </div>
+                <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Head position</p>
+                  <p id="head-position" class="mono mt-2 text-base font-semibold">—</p>
+                </div>
+                <div class="rounded-[var(--radius)] bg-slate-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Steps taken</p>
+                  <p id="step-count" class="mono mt-2 text-base font-semibold">0</p>
+                </div>
+              </div>
+              <div class="mt-4 rounded-[var(--radius)] border border-emerald-100 bg-emerald-50 p-4" aria-live="polite">
+                <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">In plain words</p>
+                <p id="last-action" class="mt-2 text-sm leading-6 text-slate-700">Press “Take one step” and this box will explain what the machine did.</p>
+              </div>
+              <details class="mt-4 rounded-[var(--radius)] border border-slate-200 p-4">
+                <summary class="cursor-pointer text-sm font-semibold">Show recent step history</summary>
+                <ol id="machine-log" class="mt-3 space-y-2 text-sm text-slate-600">
+                  <li>Load a machine to begin.</li>
+                </ol>
+              </details>
+              <p class="mt-4 text-xs leading-5 text-slate-500">This simulator demonstrates the rules idea. It does not contain the complete 121-state transition table from the Lean source.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="panel-reference" class="tab-panel hidden">
+          <div class="grid gap-5 lg:grid-cols-2">
+            <div class="panel p-5 sm:p-7">
+              <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">A helpful distinction</p>
+              <h3 class="mt-2 text-xl font-semibold">What the browser can do</h3>
+              <p class="mt-3 text-sm leading-6 text-slate-600">The JavaScript page can calculate the number definitions and run a small machine from rules. The Lean source also contains formal proofs; those proofs are mathematical arguments, not steps the browser can run.</p>
+              <div class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+                <p><strong class="text-slate-900">Included:</strong> exact numeric calculations and an editable example tape machine.</p>
+                <p><strong class="text-slate-900">Not included:</strong> Lean proof checking and the full 121-state machine transition table.</p>
+              </div>
+            </div>
+            <div class="panel p-5 sm:p-7">
+              <p class="text-xs font-bold uppercase tracking-[.14em] text-indigo-600">At a glance</p>
+              <h3 class="mt-2 text-xl font-semibold">Source ideas translated</h3>
+              <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+                <li><strong class="text-slate-900">Primorial:</strong> product of prime numbers no larger than n.</li>
+                <li><strong class="text-slate-900">Shunia product:</strong> n factorial multiplied by the primorial.</li>
+                <li><strong class="text-slate-900">Quartering clock:</strong> repeatedly divide n − 1 by four and count the divisions.</li>
+                <li><strong class="text-slate-900">Machine step:</strong> read a symbol, apply a rule, write, move, and change state.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <footer class="mt-10 border-t border-slate-200 py-6 text-sm text-slate-500">
+          <p>Interactive companion · calculations and machine simulation run locally in your browser.</p>
+        </footer>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+
+</html>
